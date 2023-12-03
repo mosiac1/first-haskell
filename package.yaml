@@ -24,6 +24,10 @@ dependencies:
 - split
 - regex-base
 - regex-posix
+- containers
+- random
+- MonadRandom
+- ghc-lib-parser
 
 ghc-options:
 - -Wall

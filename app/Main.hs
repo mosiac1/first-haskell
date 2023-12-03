@@ -7,6 +7,12 @@ import Data.List.Split (splitOn)
 import Data.Maybe (fromJust, isJust)
 import Lib
 
+interactM :: (String -> IO String) -> IO ()
+interactM f = do
+  input <- getContents
+  output <- f input
+  putStrLn output
+
 -- Day 1, Part 2 Solution
 solveDay1P2 :: [Char] -> String
 solveDay1P2 =
@@ -35,5 +41,15 @@ solveDay2P1 = show . sumValidCubeGames . map parseCubeGame . lines
 solveDay2P2 :: [Char] -> String
 solveDay2P2 = show . sumMinFeasibleCubeGrabPowers . map parseCubeGame . lines
 
+solveDay3P1 :: String -> IO String
+solveDay3P1 s = do
+  engineSchemas <- mapM parseEngineSchemaLine (lines s)
+  return $ show $ sum $ validNumbersInEngineSchema engineSchemas
+
+solveDay3P2 :: String -> IO String
+solveDay3P2 s = do
+  engineSchemas <- mapM parseEngineSchemaLine (lines s)
+  return $ show $ sumGearRatios engineSchemas
+
 main :: IO ()
-main = interact solveDay2P2
+main = interactM solveDay3P2
