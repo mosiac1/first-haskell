@@ -2,10 +2,10 @@ module Main
   ( main
   ) where
 
-import Lib
+import Data.Char (digitToInt, isDigit)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust, isJust)
-import Data.Char (digitToInt, isDigit)
+import Lib
 
 -- Day 1, Part 2 Solution
 solveDay1P2 :: [Char] -> String
@@ -28,5 +28,12 @@ solveDay1P1 =
     firstLastDigits :: [Char] -> (Char, Char)
     firstLastDigits = headAndTail . filter isDigit
 
+-- Day 2, Part 1 Solution
+solveDay2P1 :: [Char] -> String
+solveDay2P1 = show . sumValidCubeGames . map parseCubeGame . lines
+
+solveDay2P2 :: [Char] -> String
+solveDay2P2 = show . sumMinFeasibleCubeGrabPowers . map parseCubeGame . lines
+
 main :: IO ()
-main = interact solveDay1P2
+main = interact solveDay2P2

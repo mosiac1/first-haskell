@@ -35,6 +35,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , regex-base
+    , regex-posix
     , split
   default-language: Haskell2010
 
@@ -50,6 +52,8 @@ executable first-haskell-exe
   build-depends:
       base >=4.7 && <5
     , first-haskell
+    , regex-base
+    , regex-posix
     , split
   default-language: Haskell2010
 
@@ -66,5 +70,7 @@ test-suite first-haskell-test
   build-depends:
       base >=4.7 && <5
     , first-haskell
+    , regex-base
+    , regex-posix
     , split
   default-language: Haskell2010
