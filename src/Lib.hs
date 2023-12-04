@@ -9,14 +9,18 @@ module Lib
   , parseEngineSchemaLine
   , validNumbersInEngineSchema
   , sumGearRatios
+  , parseScratchCard
+  , valueScratchCard
+  , valScratchCards,
+  addLists, f
   ) where
 
 import Control.Monad.Random
 import Data.Char (digitToInt, isDigit)
-import Data.List (isPrefixOf)
+import Data.List (intersect, isPrefixOf)
 import Data.List.Split (splitOn)
 import qualified Data.Set as Set
-import Data.Traversable (mapAccumL, mapAccumR)
+import Data.Traversable (mapAccumR)
 import GHC.Utils.Monad
 import Text.Regex.Posix
 
@@ -59,6 +63,14 @@ parseDigSpel (x:xs) =
       else matchSpel ([x] ++ xs)
   ] ++
   parseDigSpel xs
+
+addLists :: Num a => [a] -> [a] -> [a]
+addLists xs ys =
+  let maxLength = max (length xs) (length ys)
+      padList list = list ++ replicate (maxLength - length list) 0
+      paddedXs = padList xs
+      paddedYs = padList ys
+   in zipWith (+) paddedXs paddedYs
 
 -- Day 2 --
 data CubeGrab = CubeGrab
@@ -243,3 +255,38 @@ sumGearRatios = foldlMatrixWithNeighbours f 0
                 then product numNeighbors + acc
                 else acc
             _ -> acc
+
+-- Day 4
+data ScratchCard = ScratchCard
+  { cardId :: Int
+  , winNums :: [Int]
+  , chNums :: [Int]
+  } deriving (Show)
+
+parseScratchCard :: String -> ScratchCard
+parseScratchCard s =
+  ScratchCard {cardId = cId, winNums = head wcNs, chNums = last wcNs}
+  where
+    cId =
+      case s =~ "Card *([0-9]+):" :: [[String]] of
+        ([_, cardIdS]:_) -> parseInt cardIdS
+        _ -> error $ "Card ID not found " ++ s
+    numsS = drop 2 $ dropWhile (/= ':') s
+    wcNs = map (map parseInt) $ map words $ splitOn " | " numsS
+
+valueScratchCard :: ScratchCard -> Int
+valueScratchCard sc =
+  case hits of
+    0 -> 0
+    x -> 2 ^ (x - 1)
+  where
+    hits = length $ intersect (winNums sc) (chNums sc)
+
+valScratchCards :: [ScratchCard] -> Int
+valScratchCards scs = fst $ foldl f (0, []) cValues
+  where
+    cValues = map (\sc -> length $ intersect (winNums sc) (chNums sc)) scs
+
+f :: (Int, [Int]) -> Int -> (Int, [Int])
+f (accV, []) v = f (accV, [0]) v
+f (accV, (x:accL)) v = (accV + x + 1, addLists accL $ replicate v (x + 1))

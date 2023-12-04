@@ -41,6 +41,7 @@ solveDay2P1 = show . sumValidCubeGames . map parseCubeGame . lines
 solveDay2P2 :: [Char] -> String
 solveDay2P2 = show . sumMinFeasibleCubeGrabPowers . map parseCubeGame . lines
 
+-- Day 3
 solveDay3P1 :: String -> IO String
 solveDay3P1 s = do
   engineSchemas <- mapM parseEngineSchemaLine (lines s)
@@ -51,5 +52,12 @@ solveDay3P2 s = do
   engineSchemas <- mapM parseEngineSchemaLine (lines s)
   return $ show $ sumGearRatios engineSchemas
 
+-- Day 4
+solveDay4P1 :: String -> String
+solveDay4P1 = show . sum . map (valueScratchCard . parseScratchCard) . lines
+
+solveDay4P2 :: String -> String
+solveDay4P2 = show . valScratchCards . map parseScratchCard . lines
+
 main :: IO ()
-main = interactM solveDay3P2
+main = interact solveDay4P2
