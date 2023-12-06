@@ -11,6 +11,13 @@ packages:
       size: 443
   original:
     hackage: split-0.2.4
+- completed:
+    hackage: pretty-simple-4.1.2.0@sha256:1c0a96e4205010d704c52883c53c98258c588ce7196763b408949d9db712ba14,4113
+    pantry-tree:
+      sha256: af1fc182e52bace1cb472830a7af4354bf5475056855f4df8137411de6306965
+      size: 1229
+  original:
+    hackage: pretty-simple-4.1.2.0
 snapshots:
 - completed:
     sha256: afd5ba64ab602cabc2d3942d3d7e7dd6311bc626dcb415b901eaf576cb62f0ea

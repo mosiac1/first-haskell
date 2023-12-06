@@ -3,9 +3,11 @@ module Main
   ) where
 
 import Data.Char (digitToInt, isDigit)
-import Data.List.Split (splitOn)
+import Data.List (sortOn)
+import Data.List.Split (chunksOf, splitOn)
 import Data.Maybe (fromJust, isJust)
 import Lib
+import Text.Pretty.Simple (pPrint)
 
 interactM :: (String -> IO String) -> IO ()
 interactM f = do
@@ -59,5 +61,29 @@ solveDay4P1 = show . sum . map (valueScratchCard . parseScratchCard) . lines
 solveDay4P2 :: String -> String
 solveDay4P2 = show . valScratchCards . map parseScratchCard . lines
 
+-- Day 5
+solveDay5P1 :: IO ()
+solveDay5P1 = do
+  input <- getContents
+  let inLines = splitOn "\n\n" input
+      seeds = map parseInt $ words $ drop 7 $ head inLines
+      entMap = foldl1 combineEntMap $ map parseEntMap $ drop 1 $ inLines
+  pPrint $ minimum $ map (getMappedEnt entMap) seeds
+
+solveDay5P2 :: IO ()
+solveDay5P2 = do
+  input <- getContents
+  let inLines = splitOn "\n\n" input
+      seeds =
+        sortOn (\(EntMapping _ x _) -> x) $
+        map (\[x, y] -> (EntMapping x x y)) $
+        chunksOf 2 $ map parseInt $ words $ drop 7 $ head inLines
+      entMap = foldl1 combineEntMap $ map parseEntMap $ drop 1 $ inLines
+  pPrint $
+    sortOn (\(EntMapping _ x _) -> x) $
+    applyEntMapToSeedRanges
+      seeds
+      (sortOn (\(EntMapping x _ _) -> x) $ mappings entMap)
+
 main :: IO ()
-main = interact solveDay4P2
+main = solveDay5P2

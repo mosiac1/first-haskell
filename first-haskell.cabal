@@ -38,6 +38,7 @@ library
     , base >=4.7 && <5
     , containers
     , ghc-lib-parser
+    , pretty-simple
     , random
     , regex-base
     , regex-posix
@@ -59,6 +60,7 @@ executable first-haskell-exe
     , containers
     , first-haskell
     , ghc-lib-parser
+    , pretty-simple
     , random
     , regex-base
     , regex-posix
@@ -81,6 +83,7 @@ test-suite first-haskell-test
     , containers
     , first-haskell
     , ghc-lib-parser
+    , pretty-simple
     , random
     , regex-base
     , regex-posix
