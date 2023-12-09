@@ -3,7 +3,7 @@ module Main
   ) where
 
 import Data.Char (digitToInt, isDigit)
-import Data.List (sortOn)
+import Data.List (sortBy, sortOn)
 import Data.List.Split (chunksOf, splitOn)
 import Data.Maybe (fromJust, isJust)
 import Lib
@@ -85,5 +85,22 @@ solveDay5P2 = do
       seeds
       (sortOn (\(EntMapping x _ _) -> x) $ mappings entMap)
 
+-- Day 6
+solveDay6P1 :: String -> String
+solveDay6P1 =
+  show .
+  product . map ((\(l, r) -> r - l + 1) . getRaceWinInterv) . parseRaceTimeDist
+
+solveDay6P2 :: String -> String
+solveDay6P2 =
+  show . (\(l, r) -> r - l + 1) . getRaceWinInterv . parseRaceTimeDistComb
+
+-- Day 7
+solveDay7P1 :: String -> String
+solveDay7P1 = show . valuateCamelPokers . map parseCamelPoker . lines
+
+solveDay7P2 :: String -> String
+solveDay7P2 = show . valuateCamelPokersWithJ . map parseCamelPokerWithJ . lines
+
 main :: IO ()
-main = solveDay5P2
+main = interact solveDay7P2

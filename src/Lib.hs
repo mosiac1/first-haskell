@@ -1,31 +1,13 @@
-module Lib
-  ( parseInt
-  , headAndTail
-  , matchSpel
-  , parseDigSpel
-  , parseCubeGame
-  , sumValidCubeGames
-  , sumMinFeasibleCubeGrabPowers
-  , parseEngineSchemaLine
-  , validNumbersInEngineSchema
-  , sumGearRatios
-  , parseScratchCard
-  , valueScratchCard
-  , valScratchCards
-  , parseEntMap
-  , intrnlCombineEntMappings
-  , EntMapping(EntMapping)
-  , combineEntMap
-  , getMappedEnt
-  , applyEntMapToSeedRanges
-  , mappings
-  ) where
+module Lib where
 
 import Control.Monad.Random
 import Data.Char (digitToInt, isDigit)
+import Data.Char (chr, ord)
 import Data.Function (on)
 import Data.List (find, intercalate, intersect, isPrefixOf, sortBy)
 import Data.List.Split (splitOn)
+import qualified Data.Map as Map
+import Data.Maybe (fromJust)
 import qualified Data.Set as Set
 import Data.Traversable (mapAccumR)
 import GHC.Utils.Monad
@@ -469,3 +451,176 @@ applyEntMapToSeedRanges ((EntMapping lss lds lsize):ls) ((EntMapping rss rds rsi
      in applyEntMapToSeedRanges
           (lBeforeR : lAndR : lAfterR : ls)
           ((EntMapping rss rds rsize) : rs)
+
+-- Day 6
+parseRaceTimeDist :: String -> [(Int, Int)]
+parseRaceTimeDist =
+  (\(times, dists) -> zip times dists) .
+  headAndTail . map (map parseInt . words . drop 11) . lines
+
+parseRaceTimeDistComb :: String -> (Int, Int)
+parseRaceTimeDistComb =
+  headAndTail .
+  map (foldl prependDigit 0 . map parseInt . words . drop 11) . lines
+
+-- pressTime * (raceTime - pressTime) = best
+-- | - pressTime ^ 2 + pressTime * raceTime - best = 0
+-- | -x^2 + x * raceTime - best = 0
+-- | delta = raceTime ^ 2 - 4 * best
+-- | x = (-b +- sqrt(raceTime ^ 2 - 4 * best)) / -2
+-- | x = (b +- sqrt(raceTime ^ 2 - 4 * best)) / 2
+-- | x = (raceTime +- sqrt(raceTime ^ 2 - 4 * best)) / 2
+-- take left rounded up, right rounded down
+-- adding/subtracting 0.001 to account for equality cases
+getRaceWinInterv :: (Int, Int) -> (Int, Int)
+getRaceWinInterv (timeInt, bestDistInt) =
+  let time = fromIntegral timeInt
+      bestDist = fromIntegral bestDistInt
+      delta = sqrt (time ^ 2 - 4 * bestDist)
+      lowX = (time - delta) / 2
+      highX = (time + delta) / 2
+   in (ceiling (lowX + 0.001), floor (highX - 0.001))
+
+-- Day 7
+data CamelHand =
+  CamelHand (Int, Int, Int, Int, Int)
+  deriving (Show)
+
+data CamelPoker = CamelPoker
+  { hand :: CamelHand
+  , sortedHand :: CamelHand
+  , bid :: Int
+  } deriving (Show)
+
+camelHandToList :: CamelHand -> [Int]
+camelHandToList (CamelHand (x, y, z, u, v)) = [x, y, z, u, v]
+
+cardsListToHand :: [Int] -> CamelHand
+cardsListToHand [_x, _y, _z, _u, _v] = CamelHand (_x, _y, _z, _u, _v)
+cardsListToHand _ = error "Malformed list"
+
+_compareCamelPokers ::
+     (CamelHand -> Int) -> CamelPoker -> CamelPoker -> Ordering
+_compareCamelPokers ranker (CamelPoker leftHand sortedLeftHand _) (CamelPoker rightHand sortedRightHand _) =
+  let leftRanking = ranker sortedLeftHand
+      rightRanking = ranker sortedRightHand
+   in case leftRanking == rightRanking of
+        True ->
+          let (leftFirstDif, rightFirstDif) =
+                head $
+                filter (\(_x, _y) -> _x /= _y) $
+                zip (camelHandToList leftHand) (camelHandToList rightHand)
+           in compare leftFirstDif rightFirstDif
+        False -> compare leftRanking rightRanking
+
+compareCamelPokers :: CamelPoker -> CamelPoker -> Ordering
+compareCamelPokers = _compareCamelPokers rankSortedCamelHand
+
+compareCamelPokersWithJ :: CamelPoker -> CamelPoker -> Ordering
+compareCamelPokersWithJ = _compareCamelPokers rankSortedCamelHandWithJ
+
+sortCamelHand :: CamelHand -> CamelHand
+sortCamelHand _hand =
+  let cardsList = camelHandToList _hand
+      frequencyMap = Map.fromListWith (+) [(card, 1) | card <- cardsList]
+      compareCards lhs rhs =
+        let lhsValue = fromJust $ Map.lookup lhs frequencyMap
+            rhsValue = fromJust $ Map.lookup rhs frequencyMap
+         in case lhsValue == rhsValue of
+              True -> compare lhs rhs
+              False -> compare lhsValue rhsValue
+   in cardsListToHand $ reverse $ sortBy compareCards cardsList
+
+-- Five of a kind - 6
+-- Four of a kind - 5
+-- Full House - 4
+-- Three of a kind - 3
+-- Two Pair - 2
+-- One Pair - 1
+-- High Card - 0
+rankSortedCamelHand :: CamelHand -> Int
+rankSortedCamelHand (CamelHand (x, y, z, u, v))
+  | x == y && x == z && x == u && x == v = 6
+  | x == y && x == z && x == u = 5
+  | x == y && x == z && u == v = 4
+  | x == y && x == z = 3
+  | x == y && z == u = 2
+  | x == y = 1
+  | otherwise = 0
+
+rankSortedCamelHandWithJ :: CamelHand -> Int
+rankSortedCamelHandWithJ (CamelHand (x, y, z, u, v))
+  | x == y && x == z && x == u && x == v = 6 -- Five of kind, simple
+  | x == y && x == z && x == u -- Four of a kind, no Js simple, with any Js -> five
+   =
+    case countJ of
+      0 -> 5
+      _ -> 6
+  | x == -1 && x == y && x == z && u == v = 6 -- Full house, pair of three is Js "JJJXX"
+  | x == y && x == z && u /= -1 && u == v = 4 -- Full house, no Js
+  | x /= -1 && x == y && x == z -- Three of a kind, possible Js
+   =
+    case countJ of
+      0 -> 3
+      1 -> 5
+      _ -> 6
+  | x /= -1 && x == y && z /= -1 && z == u -- Two pairs,
+   =
+    case countJ of
+      0 -> 2
+      _ -> 4
+  | x /= -1 && x == y =
+    case countJ of
+      0 -> 1
+      1 -> 3
+      2 -> 5
+      _ -> 5
+  | otherwise =
+    case countJ of
+      0 -> 0
+      1 -> 1
+      2 -> 3
+      3 -> 5
+      _ -> 6
+  where
+    countJ =
+      length $
+      filter (\_x -> _x == -1) $ camelHandToList (CamelHand (x, y, z, u, v))
+
+camelCardValues :: Map.Map Char Int
+camelCardValues =
+  Map.fromList $
+  [('A', 14), ('K', 13), ('Q', 12), ('J', 11), ('T', 10)] ++
+  map (\x -> (chr $ ord '0' + x, x)) [1,2 .. 9]
+
+camelCardValuesWithJ :: Map.Map Char Int
+camelCardValuesWithJ =
+  Map.fromList $
+  [('A', 14), ('K', 13), ('Q', 12), ('J', -1), ('T', 10)] ++
+  map (\x -> (chr $ ord '0' + x, x)) [1,2 .. 9]
+
+_parseCamelPoker :: Map.Map Char Int -> String -> CamelPoker
+_parseCamelPoker cardValues s =
+  let (cardsChars, bidChars) = headAndTail $ words s
+      _hand =
+        cardsListToHand $
+        map (\c -> fromJust $ Map.lookup c cardValues) cardsChars
+      _bid = parseInt bidChars
+   in (CamelPoker _hand (sortCamelHand _hand) _bid)
+
+parseCamelPoker :: String -> CamelPoker
+parseCamelPoker = _parseCamelPoker camelCardValues
+
+parseCamelPokerWithJ :: String -> CamelPoker
+parseCamelPokerWithJ = _parseCamelPoker camelCardValuesWithJ
+
+--_valuateCamelPokers ::
+--     (CamelPoker -> CamelPoker -> Ordering) -> [CamelPoker] -> Int
+_valuateCamelPokers comparator =
+  sum . map (\(x, y) -> x * y) . zip [1 ..] . map bid . sortBy comparator
+
+--valuateCamelPokers :: [CamelPoker] -> Int
+valuateCamelPokers = _valuateCamelPokers compareCamelPokers
+
+--valuateCamelPokersWithJ :: [CamelPoker] -> Int
+valuateCamelPokersWithJ = _valuateCamelPokers compareCamelPokersWithJ
