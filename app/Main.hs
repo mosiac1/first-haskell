@@ -102,5 +102,12 @@ solveDay7P1 = show . valuateCamelPokers . map parseCamelPoker . lines
 solveDay7P2 :: String -> String
 solveDay7P2 = show . valuateCamelPokersWithJ . map parseCamelPokerWithJ . lines
 
+-- Day 8
+solveDay8P1 :: String -> String
+solveDay8P1 = show . walkDesertMap . parseDesertMap
+
+solveDay8P2 :: String -> String
+solveDay8P2 = show . walkDesertMapAtoZ . parseDesertMap
+
 main :: IO ()
-main = interact solveDay7P2
+main = interact solveDay8P2
