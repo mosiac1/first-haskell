@@ -715,3 +715,21 @@ findDesertAToZLengths (DesertMap _direction _paths) =
 walkDesertMapAtoZ :: DesertMap -> Int
 walkDesertMapAtoZ =
   foldl1 lcm . map (\(x, _, _, _) -> x) . findDesertAToZLengths
+
+-- Day 9
+parseOases :: String -> [[Int]]
+parseOases = map (map parseInt . words) . lines
+
+oasisNextHistory :: Num a => [a] -> [a]
+oasisNextHistory [] = []
+oasisNextHistory [_] = []
+oasisNextHistory (x1:x2:xs) = (x1 - x2 : oasisNextHistory (x2 : xs))
+
+oasisAllHistories :: (Eq a, Num a) => [a] -> [[a]]
+oasisAllHistories initHist =
+  case all ((==) 0) initHist of
+    True -> [initHist]
+    False -> [initHist] ++ oasisAllHistories (oasisNextHistory initHist)
+
+oasisPredict :: (Eq a, Num a) => [a] -> a
+oasisPredict = sum . map head . oasisAllHistories

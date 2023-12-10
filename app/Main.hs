@@ -109,5 +109,12 @@ solveDay8P1 = show . walkDesertMap . parseDesertMap
 solveDay8P2 :: String -> String
 solveDay8P2 = show . walkDesertMapAtoZ . parseDesertMap
 
+-- Day 9
+solveDay9P1 :: String -> String
+solveDay9P1 = show . sum . map oasisPredict . map reverse . parseOases
+
+solveDay9P2 :: String -> String
+solveDay9P2 = show . sum . map oasisPredict . parseOases
+
 main :: IO ()
-main = interact solveDay8P2
+main = interact solveDay9P2
