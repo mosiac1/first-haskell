@@ -116,5 +116,13 @@ solveDay9P1 = show . sum . map oasisPredict . map reverse . parseOases
 solveDay9P2 :: String -> String
 solveDay9P2 = show . sum . map oasisPredict . parseOases
 
+-- Day 10
+solveDay10P1 :: String -> String
+solveDay10P1 =
+  show . (`div` 2) . length . walkPipeMaze HPipe West . parsePipeMaze
+
+solveDay10P2:: String -> String
+solveDay10P2 = show . pipeMazeInsideCount HPipe West . parsePipeMaze
+
 main :: IO ()
-main = interact solveDay9P2
+main = interact solveDay10P2

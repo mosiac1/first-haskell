@@ -29,6 +29,7 @@ dependencies:
 - MonadRandom
 - ghc-lib-parser
 - pretty-simple
+- array
 
 ghc-options:
 - -Wall
