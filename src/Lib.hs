@@ -6,10 +6,10 @@ import Data.Array ((!), (//))
 import Data.Char (digitToInt, isDigit)
 import Data.Char (chr, ord)
 import Data.Function (on)
-import Data.List (find, intercalate, intersect, isPrefixOf, sortBy)
+import Data.List (find, intercalate, intersect, isPrefixOf, sortBy, tails)
 import Data.List.Split (splitOn)
 import qualified Data.Map as Map
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import qualified Data.Set as Set
 import Data.Traversable (mapAccumR)
 import GHC.Utils.Monad
@@ -62,6 +62,16 @@ addLists xs ys =
       paddedXs = padList xs
       paddedYs = padList ys
    in zipWith (+) paddedXs paddedYs
+
+setCountInRange :: (Ord a) => Set.Set a -> a -> a -> Int
+setCountInRange set lower higher =
+  fromMaybe 0 $ do
+    lowerGE <- Set.lookupGE lower set
+    higherLE <- Set.lookupLE higher set
+    return $ Set.findIndex higherLE set - Set.findIndex lowerGE set + 1
+
+allPairs :: [a] -> [(a, a)]
+allPairs xs = [(x, y) | (x:rest) <- tails xs, y <- rest]
 
 -- Day 2 --
 data CubeGrab = CubeGrab
@@ -918,3 +928,78 @@ pipeMazeInsideCount startEl startOrientation _pipeMaze@(PipeMaze _mazeArr) =
                 [1 .. pipesWidth]
          in inCount
    in sum $ map inCountPerRow [1 .. pipesHeight]
+
+-- Day 11
+data GalaxyMapEl
+  = Galaxy
+  | Space
+  deriving (Show, Eq)
+
+parseGalaxyMapEl :: Char -> GalaxyMapEl
+parseGalaxyMapEl s =
+  case s of
+    '.' -> Space
+    '#' -> Galaxy
+    c -> error $ "Invalid GalaxyMapEl " ++ show c
+
+data GalaxyMap = GalaxyMap
+  { galaxyMap :: Array.Array (Int, Int) GalaxyMapEl
+  }
+
+parseGalaxyMap :: String -> GalaxyMap
+parseGalaxyMap s =
+  let sLines = lines s
+      height = length sLines
+      width = length $ head sLines
+   in GalaxyMap $
+      Array.array ((1, 1), (height, width)) $
+      concat $
+      map
+        (\(posX, elems) -> map (\(posY, _elem) -> ((posX, posY), _elem)) elems) $
+      zip [1 .. height] $ map (zip [1 .. width] . map parseGalaxyMapEl) sLines
+
+expandedRowsCols :: GalaxyMap -> (Set.Set Int, Set.Set Int)
+expandedRowsCols _galaxyMap@(GalaxyMap galaxyArr) =
+  let (_, (width, height)) = Array.bounds galaxyArr
+      expandedRows =
+        filter
+          (\posX ->
+             all ((==) Space) $
+             map (\posY -> galaxyArr ! (posX, posY)) [1 .. width])
+          [1 .. height]
+      expandedCols =
+        filter
+          (\posY ->
+             all ((==) Space) $
+             map (\posX -> galaxyArr ! (posX, posY)) [1 .. height])
+          [1 .. width]
+   in (Set.fromList expandedRows, Set.fromList expandedCols)
+
+galaxyDistance ::
+     Set.Set Int -> Set.Set Int -> Int -> (Int, Int) -> (Int, Int) -> Int
+galaxyDistance expandedRows expandedCols multiplier (g1X, g1Y) (g2X, g2Y) =
+  let lowX = min g1X g2X
+      highX = max g1X g2X
+      xDist =
+        highX - lowX + multiplier * setCountInRange expandedRows lowX highX
+      lowY = min g1Y g2Y
+      highY = max g1Y g2Y
+      yDist =
+        highY - lowY + multiplier * setCountInRange expandedCols lowY highY
+   in xDist + yDist
+
+--galaxySumDistances :: GalaxyMap -> Int
+galaxySumDistances multiplier _galaxyMap@(GalaxyMap galaxyArr) =
+  let (_, (width, height)) = Array.bounds galaxyArr
+      (expandedRows, expandedCols) = expandedRowsCols _galaxyMap
+      galaxies =
+        [ (i, j)
+        | i <- [1 .. height]
+        , j <- [1 .. width]
+        , galaxyArr ! (i, j) == Galaxy
+        ]
+      galaxyPairs = allPairs galaxies
+   in sum $
+      map
+        (uncurry $ galaxyDistance expandedRows expandedCols multiplier)
+        galaxyPairs

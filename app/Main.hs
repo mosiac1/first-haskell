@@ -121,8 +121,13 @@ solveDay10P1 :: String -> String
 solveDay10P1 =
   show . (`div` 2) . length . walkPipeMaze HPipe West . parsePipeMaze
 
-solveDay10P2:: String -> String
+solveDay10P2 :: String -> String
 solveDay10P2 = show . pipeMazeInsideCount HPipe West . parsePipeMaze
 
+-- Day 11
+solveDay11P1 = show . galaxySumDistances 1 . parseGalaxyMap
+
+solveDay11P2 = show . galaxySumDistances 999999 . parseGalaxyMap
+
 main :: IO ()
-main = interact solveDay10P2
+main = interact solveDay11P2
