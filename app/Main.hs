@@ -129,5 +129,18 @@ solveDay11P1 = show . galaxySumDistances 1 . parseGalaxyMap
 
 solveDay11P2 = show . galaxySumDistances 999999 . parseGalaxyMap
 
+-- Day 12
+solveDay12P1 =
+  show .
+  sum . map (uncurry springAssignments . parseSpringsAndBrokenLine) . lines
+
+solveDay12P2 =
+  show .
+  sum .
+  map
+    ((uncurry springAssignments) .
+     (uncurry duplicateSprings) . parseSpringsAndBrokenLine) .
+  lines
+
 main :: IO ()
-main = interact solveDay11P2
+main = interact solveDay12P2

@@ -30,6 +30,7 @@ dependencies:
 - ghc-lib-parser
 - pretty-simple
 - array
+- transformers
 
 ghc-options:
 - -Wall
