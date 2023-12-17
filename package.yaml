@@ -31,6 +31,16 @@ dependencies:
 - pretty-simple
 - array
 - transformers
+- time
+- ansi-terminal
+- directory
+- optparse-applicative
+- parser-combinators
+- attoparsec
+- containers
+- text
+- mtl
+- vector
 
 ghc-options:
 - -Wall
@@ -45,6 +55,13 @@ ghc-options:
 
 library:
   source-dirs: src
+  default-extensions:
+    - LambdaCase
+    - MultiWayIf
+    - RecordWildCards
+    - OverloadedRecordDot
+    - GADTs
+    - GHC2021
 
 executables:
   first-haskell-exe:
@@ -53,17 +70,19 @@ executables:
     ghc-options:
     - -threaded
     - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - first-haskell
-
-tests:
-  first-haskell-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+    - -with-rtsopts=-N4
+    - -with-rtsopts=-qa
+    - -with-rtsopts=-C0
+    - -funfolding-use-threshold=16
+    - -fexcess-precision
+    - -optc-O3
+    - -optc-ffast-math
+    - -O2
+    default-extensions:
+    - LambdaCase
+    - MultiWayIf
+    - RecordWildCards
+    - OverloadedRecordDot
+    - GADTs
     dependencies:
     - first-haskell

@@ -1,146 +1,180 @@
-module Main
-  ( main
-  ) where
+module Main where
 
-import Data.Char (digitToInt, isDigit)
-import Data.List (sortBy, sortOn)
-import Data.List.Split (chunksOf, splitOn)
-import Data.Maybe (fromJust, isJust)
-import Lib
-import Text.Pretty.Simple (pPrint)
+{- ORMOLU_DISABLE -}
+--- Day imports
+import qualified Days.Day01 as Day01 (runDay)
+import qualified Days.Day02 as Day02 (runDay)
+import qualified Days.Day03 as Day03 (runDay)
+import qualified Days.Day04 as Day04 (runDay)
+import qualified Days.Day05 as Day05 (runDay)
+import qualified Days.Day06 as Day06 (runDay)
+import qualified Days.Day07 as Day07 (runDay)
+import qualified Days.Day08 as Day08 (runDay)
+import qualified Days.Day09 as Day09 (runDay)
+import qualified Days.Day10 as Day10 (runDay)
+import qualified Days.Day11 as Day11 (runDay)
+import qualified Days.Day12 as Day12 (runDay)
+import qualified Days.Day13 as Day13 (runDay)
+import qualified Days.Day14 as Day14 (runDay)
+import qualified Days.Day15 as Day15 (runDay)
+import qualified Days.Day16 as Day16 (runDay)
+import qualified Days.Day17 as Day17 (runDay)
+import qualified Days.Day18 as Day18 (runDay)
+import qualified Days.Day19 as Day19 (runDay)
+import qualified Days.Day20 as Day20 (runDay)
+import qualified Days.Day21 as Day21 (runDay)
+import qualified Days.Day22 as Day22 (runDay)
+import qualified Days.Day23 as Day23 (runDay)
+import qualified Days.Day24 as Day24 (runDay)
+import qualified Days.Day25 as Day25 (runDay)
 
-interactM :: (String -> IO String) -> IO ()
-interactM f = do
-  input <- getContents
-  output <- f input
-  putStrLn output
+import qualified Control.Applicative.Combinators as C (option)
+import Control.Monad (forM_, unless)
+import Data.List (intercalate)
 
--- Day 1, Part 2 Solution
-solveDay1P2 :: [Char] -> String
-solveDay1P2 =
-  show .
-  sum .
-  (map $
-   (\(x, y) -> fromJust x * 10 + fromJust y) .
-   headAndTail . filter isJust . parseDigSpel) .
-  (splitOn "\n")
+--- Other imports
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Maybe (fromMaybe)
+import Options.Applicative
+import Program.RunDay (Day, Verbosity(Quiet, Timings, Verbose))
 
--- Day 1, Part 1 Solution
-solveDay1P1 :: [Char] -> String
-solveDay1P1 =
-  show .
-  sum .
-  (map $ (\(x, y) -> digitToInt x * 10 + digitToInt y) . firstLastDigits) .
-  (splitOn "\n")
+import Program.Color (withColor)
+import System.Console.ANSI (Color(..))
+
+-- Data Output
+import Text.Printf (printf)
+
+{- ORMOLU_ENABLE -}
+data Days
+  = AllDays
+  | OneDay
+      { day :: Int
+      , input :: Maybe String
+      }
+  deriving (Show)
+
+data Options =
+  Options Days Verbosity
+
+dayParser :: Parser Days
+dayParser = (OneDay <$> day <*> input) <|> allDays
   where
-    firstLastDigits :: [Char] -> (Char, Char)
-    firstLastDigits = headAndTail . filter isDigit
+    day =
+      option auto $
+      long "day" <>
+      short 'd' <> metavar "DAY" <> help "Present the solutions for one day."
+    input =
+      optional $
+      strOption $
+      long "input" <>
+      short 'i' <>
+      metavar "FILE" <> help "The file to read the selected day's input from."
+    allDays =
+      flag' AllDays $
+      long "all-days" <>
+      help
+        (unwords
+           [ "Present solutions for all of the days of"
+           , "Advent of Code, with default input file names."
+           ])
 
--- Day 2, Part 1 Solution
-solveDay2P1 :: [Char] -> String
-solveDay2P1 = show . sumValidCubeGames . map parseCubeGame . lines
+optionsParser :: Parser Options
+optionsParser = Options <$> dayParser <*> verbosityParser
+  where
+    verbosityParser :: Parser Verbosity
+    verbosityParser =
+      C.option Quiet $
+      (flag' Verbose $
+       long "verbose" <>
+       short 'v' <>
+       help
+         (unwords
+            [ "Whether to print out extra info, such as the"
+            , "result of the input parser, and more detailed"
+            , "error messages."
+            , "Also enables timing of solutions."
+            ])) <|>
+      (flag' Timings $
+       long "timings" <>
+       short 't' <>
+       help (unwords ["Whether to enable timing of the solutions."]))
 
-solveDay2P2 :: [Char] -> String
-solveDay2P2 = show . sumMinFeasibleCubeGrabPowers . map parseCubeGame . lines
+days :: Map Int (Day, String)
+days =
+  Map.fromList . zip [1 ..] $
+  [ (Day01.runDay, "input/1.txt")
+  , (Day02.runDay, "input/2.txt")
+  , (Day03.runDay, "input/3.txt")
+  , (Day04.runDay, "input/4.txt")
+  , (Day05.runDay, "input/5.txt")
+  , (Day06.runDay, "input/6.txt")
+  , (Day07.runDay, "input/7.txt")
+  , (Day08.runDay, "input/8.txt")
+  , (Day09.runDay, "input/9.txt")
+  , (Day10.runDay, "input/10.txt")
+  , (Day11.runDay, "input/11.txt")
+  , (Day12.runDay, "input/12.txt")
+  , (Day13.runDay, "input/13.txt")
+  , (Day14.runDay, "input/14.txt")
+  , (Day15.runDay, "input/15.txt")
+  , (Day16.runDay, "input/16.txt")
+  , (Day17.runDay, "input/17.txt")
+  , (Day18.runDay, "input/18.txt")
+  , (Day19.runDay, "input/19.txt")
+  , (Day20.runDay, "input/20.txt")
+  , (Day21.runDay, "input/21.txt")
+  , (Day22.runDay, "input/22.txt")
+  , (Day23.runDay, "input/23.txt")
+  , (Day24.runDay, "input/24.txt")
+  , (Day25.runDay, "input/25.txt")
+  ]
 
--- Day 3
-solveDay3P1 :: String -> IO String
-solveDay3P1 s = do
-  engineSchemas <- mapM parseEngineSchemaLine (lines s)
-  return $ show $ sum $ validNumbersInEngineSchema engineSchemas
+performDay :: Options -> IO ()
+performDay (Options d v) =
+  case d of
+    AllDays -> do
+      results <-
+        let eachDay d (dayFunc, inputFile) = do
+              withColor Magenta $ putStrLn $ printf "\n***Day %02d***" d
+              dayFunc v inputFile
+         in sequence $ Map.mapWithKey eachDay days
+      printSummary results
+    OneDay {..} ->
+      case days Map.!? day of
+        Nothing -> putStrLn "Invalid day provided. There are 25 days in Advent."
+        Just (dayFunc, inputFile) -> do
+          let i' = fromMaybe inputFile input
+          withColor Magenta $ putStrLn $ printf "\n***Day %02d***" day
+          dayFunc v i'
+          withColor Magenta $ putStrLn "************"
 
-solveDay3P2 :: String -> IO String
-solveDay3P2 s = do
-  engineSchemas <- mapM parseEngineSchemaLine (lines s)
-  return $ show $ sumGearRatios engineSchemas
-
--- Day 4
-solveDay4P1 :: String -> String
-solveDay4P1 = show . sum . map (valueScratchCard . parseScratchCard) . lines
-
-solveDay4P2 :: String -> String
-solveDay4P2 = show . valScratchCards . map parseScratchCard . lines
-
--- Day 5
-solveDay5P1 :: IO ()
-solveDay5P1 = do
-  input <- getContents
-  let inLines = splitOn "\n\n" input
-      seeds = map parseInt $ words $ drop 7 $ head inLines
-      entMap = foldl1 combineEntMap $ map parseEntMap $ drop 1 $ inLines
-  pPrint $ minimum $ map (getMappedEnt entMap) seeds
-
-solveDay5P2 :: IO ()
-solveDay5P2 = do
-  input <- getContents
-  let inLines = splitOn "\n\n" input
-      seeds =
-        sortOn (\(EntMapping _ x _) -> x) $
-        map (\[x, y] -> (EntMapping x x y)) $
-        chunksOf 2 $ map parseInt $ words $ drop 7 $ head inLines
-      entMap = foldl1 combineEntMap $ map parseEntMap $ drop 1 $ inLines
-  pPrint $
-    sortOn (\(EntMapping _ x _) -> x) $
-    applyEntMapToSeedRanges
-      seeds
-      (sortOn (\(EntMapping x _ _) -> x) $ mappings entMap)
-
--- Day 6
-solveDay6P1 :: String -> String
-solveDay6P1 =
-  show .
-  product . map ((\(l, r) -> r - l + 1) . getRaceWinInterv) . parseRaceTimeDist
-
-solveDay6P2 :: String -> String
-solveDay6P2 =
-  show . (\(l, r) -> r - l + 1) . getRaceWinInterv . parseRaceTimeDistComb
-
--- Day 7
-solveDay7P1 :: String -> String
-solveDay7P1 = show . valuateCamelPokers . map parseCamelPoker . lines
-
-solveDay7P2 :: String -> String
-solveDay7P2 = show . valuateCamelPokersWithJ . map parseCamelPokerWithJ . lines
-
--- Day 8
-solveDay8P1 :: String -> String
-solveDay8P1 = show . walkDesertMap . parseDesertMap
-
-solveDay8P2 :: String -> String
-solveDay8P2 = show . walkDesertMapAtoZ . parseDesertMap
-
--- Day 9
-solveDay9P1 :: String -> String
-solveDay9P1 = show . sum . map oasisPredict . map reverse . parseOases
-
-solveDay9P2 :: String -> String
-solveDay9P2 = show . sum . map oasisPredict . parseOases
-
--- Day 10
-solveDay10P1 :: String -> String
-solveDay10P1 =
-  show . (`div` 2) . length . walkPipeMaze HPipe West . parsePipeMaze
-
-solveDay10P2 :: String -> String
-solveDay10P2 = show . pipeMazeInsideCount HPipe West . parsePipeMaze
-
--- Day 11
-solveDay11P1 = show . galaxySumDistances 1 . parseGalaxyMap
-
-solveDay11P2 = show . galaxySumDistances 999999 . parseGalaxyMap
-
--- Day 12
-solveDay12P1 =
-  show .
-  sum . map (uncurry springAssignments . parseSpringsAndBrokenLine) . lines
-
-solveDay12P2 =
-  show .
-  sum .
-  map
-    ((uncurry springAssignments) .
-     (uncurry duplicateSprings) . parseSpringsAndBrokenLine) .
-  lines
+printSummary :: Map Int (Maybe Double, Maybe Double) -> IO ()
+printSummary results = do
+  putStrLn "\n************\n  Summary:  "
+  let partsA = Map.mapKeys ((++ " (a)") . printf "%02d") $ fmap fst results
+      partsB = Map.mapKeys ((++ " (b)") . printf "%02d") $ fmap snd results
+      parts = Map.toList $ partsA <> partsB
+      fails = [p | (p, Nothing) <- parts]
+      fasts = [(p, t) | (p, Just t) <- parts, t < 1]
+      slows = [(p, t) | (p, Just t) <- parts, t >= 1]
+  putStr $ printf "\n%d parts " $ length fasts
+  withColor Green $ putStr "completed in under 1 second"
+  putStrLn ".\nOf the remainder:"
+  unless (null fails) $ do
+    putStr $ printf "  %d parts" $ length fails
+    withColor Red $ putStr " failed"
+    putStrLn $ ":\n    " ++ intercalate ", " fails
+  unless (null slows) $ do
+    putStr $ printf "  %d parts" $ length slows
+    withColor Yellow $ putStr " took over 1 second to complete"
+    putStrLn ":"
+    forM_ slows $ \(p, t) -> putStrLn $ printf "    %s took %.2f seconds" p t
 
 main :: IO ()
-main = interact solveDay12P2
+main = performDay =<< execParser opts
+  where
+    opts =
+      info
+        (optionsParser <**> helper)
+        (fullDesc <> progDesc "Prints out some Advent of Code solutions.")
