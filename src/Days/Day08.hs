@@ -3,6 +3,7 @@ module Days.Day08
   ) where
 
 import Data.List.Split (splitOn)
+
 {- ORMOLU_DISABLE -}
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map

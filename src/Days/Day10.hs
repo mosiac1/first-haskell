@@ -4,6 +4,7 @@ module Days.Day10
 
 import Data.Array (Array, (!), (//))
 import qualified Data.Array as Array
+
 {- ORMOLU_DISABLE -}
 import qualified Data.Set as Set
 
