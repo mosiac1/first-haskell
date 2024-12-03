@@ -41,6 +41,7 @@ dependencies:
 - text
 - mtl
 - vector
+- pqueue
 
 ghc-options:
 - -Wall

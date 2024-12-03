@@ -13,6 +13,7 @@ import Data.Time (diffUTCTime, getCurrentTime)
 import Program.Color
 import System.Console.ANSI
 import System.Directory (doesFileExist)
+import Text.Pretty.Simple (pPrint)
 import Text.Printf
 
 data Verbosity

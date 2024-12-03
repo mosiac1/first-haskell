@@ -49,11 +49,11 @@ data PipeMaze = PipeMaze
 
 ------------ PART A ------------
 partA :: Input -> OutputA
-partA = (`div` 2) . length . walkPipeMaze HPipe West
+partA = (`div` 2) . length . walkPipeMaze SWPipe East
 
 ------------ PART B ------------
 partB :: Input -> OutputB
-partB = pipeMazeInsideCount HPipe West
+partB = pipeMazeInsideCount SWPipe East
 
 pipeMazeRedirects :: PipeMazeEl -> Orientation -> Orientation
 pipeMazeRedirects HPipe East = East
